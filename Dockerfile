@@ -1,45 +1,36 @@
 # Etapa 1: Build de la UI (Next.js)
-FROM node:20-alpine AS ui-build
+FROM node:20-alpine AS build
 
-WORKDIR /app/agent-ui
+WORKDIR /app
+
+# Copiar solo archivos necesarios para instalar dependencias
 COPY agent-ui/package*.json ./
+
+# Instalar dependencias (incluyendo dev para el build)
 RUN npm install
-COPY agent-ui/ ./
+
+# Copiar el resto de la app
+COPY agent-ui/ .
+
+# Build de producción
 RUN npm run build
 
-# Etapa 2: Agente de IA (Python)
-FROM python:3.11-slim AS agent
+# Eliminar devDependencies para producción
+RUN npm prune --omit=dev
 
-WORKDIR /app/agent
-COPY agent/requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-COPY agent/ ./
+# Etapa 2: Imagen final mínima
+FROM node:20-alpine AS production
 
-# Etapa 3: Imagen final combinada basada en Ubuntu
-FROM ubuntu:22.04
+WORKDIR /app
 
-# Instalar Node, Python y pip
-RUN apt-get update && \
-    apt-get install -y curl python3 python3-pip && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs && \
-    apt-get clean
+# Copiar solo lo necesario desde el build
+COPY --from=build /app ./
 
-# Copiar frontend y backend al contenedor final
-COPY --from=ui-build /app/agent-ui /app/agent-ui
-COPY --from=agent /app/agent /app/agent
-
-# Instalar dependencias Python
-RUN pip3 install --no-cache-dir -r /app/agent/requirements.txt
-
-# Instalar dependencias Node (solo producción)
-WORKDIR /app/agent-ui
-RUN npm install --omit=dev
-
-# Copiar script de arranque
+# Copiar script de arranque si es necesario
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
 EXPOSE 3000
 
+# Comando de inicio
 CMD ["/start.sh"]
