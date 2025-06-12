@@ -1,6 +1,8 @@
-#!/bin/sh
-# Inicia el agent (ajusta si tu entrypoint es distinto a main.py)
-python3 /app/agent/main.py &
+#!/bin/bash
 
-# Inicia nginx en primer plano
-nginx -g 'daemon off;'
+# Iniciar el agente Python en segundo plano
+python3 /app/agent/playground.py &
+
+# Iniciar el servidor Next.js en producción
+cd /app/agent-ui
+npm run start
