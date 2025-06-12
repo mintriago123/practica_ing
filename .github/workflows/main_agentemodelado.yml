@@ -26,24 +26,27 @@ jobs:
 
       - name: Create and start virtual environment
         run: |
+          cd agent
           python -m venv venv
           source venv/bin/activate
       
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          cd agent
+          pip install -r requirements.txt
         
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
       - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+        run: | 
+          cd agent
+          zip release.zip ./* -r
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: |
-            release.zip
-            !venv/
+          path: agent/release.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -62,9 +65,10 @@ jobs:
           name: python-app
 
       - name: Unzip artifact for deployment
-        run: unzip release.zip
+        run: |
+          mkdir -p agent
+          unzip release.zip -d agent
 
-      
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -78,4 +82,4 @@ jobs:
         with:
           app-name: 'agentemodelado'
           slot-name: 'Production'
-          
+          package: agent
