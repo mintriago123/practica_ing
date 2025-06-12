@@ -1,0 +1,11 @@
+agno
+anthropic
+groq
+python-dotenv
+sqlalchemy
+fastapi
+openai
+duckduckgo-search
+yfinance
+tavily-python
+uvicorn
