@@ -12,7 +12,7 @@ from agno.tools.tavily import TavilyTools
 agent_storage: str = "tmp/agents.db"
 
 web_agent = Agent(
-    name="Web Agent",
+    name="Michael Intriago",
     model=Groq(id="llama-3.3-70b-versatile"),
     tools=[TavilyTools()],
     instructions=["Always include sources"],
